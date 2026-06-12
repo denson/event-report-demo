@@ -1,0 +1,53 @@
+{
+  "name": "Cyber Event Reports — Explainer",
+  "description": "An agent-to-agent explainer for a cyber event-reporting service (demo, stood up 2026-06-12, in active build). It teaches a calling agent how to explain the service to its human and how to show and explain the reports produced so far. Methodology as it stands today: the service watches RSS feeds to DETECT candidate security events, then SUPPLEMENTS each candidate with Google Vertex AI and other grounded searches to corroborate, enrich, and fact-check it; from that it AUTO-GENERATES a multi-source event report — a knowledge graph of the incident, source-reliability tiering (load-bearing vs reach-only), reconciled conflicting claims, and adjudicated false alarms (companies that surfaced as candidates but were ruled out, recorded as first-class findings). For this demo the workflow is: auto-generated report → reviewed by one or potentially MULTIPLE named human subject-matter experts (each shown with their expertise basis) → published. We anticipate adding various data-source APIs to broaden what we search beyond RSS + Vertex.",
+  "version": "0.1.0",
+  "provider": {
+    "organization": "Denson Smith"
+  },
+  "documentationUrl": "https://denson.github.io/event-report-demo/",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": false
+  },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain", "text/markdown"],
+  "skills": [
+    {
+      "id": "explain-service",
+      "name": "Explain the service",
+      "description": "Explain to a human, at the right altitude, what this service is and why it differs from a news aggregator: it RELATES many sources into a single event rather than de-duplicating them, tiers those sources by factual reliability, reconciles conflicting claims, and treats false alarms (what is NOT part of the event) as first-class signal. Every report is anchored by a named human expert's review.",
+      "tags": ["explainer", "onboarding", "value-proposition"],
+      "examples": [
+        "Explain this cyber-report service to my user in three sentences.",
+        "Why is this different from a security news feed?",
+        "What does 'relate, don't dedup' mean here?"
+      ]
+    },
+    {
+      "id": "explain-methodology",
+      "name": "Explain the methodology",
+      "description": "Describe how a report is produced, end to end, as the methodology stands today (demo): (1) DETECT — watch RSS feeds for candidate events; (2) SUPPLEMENT — corroborate and enrich each candidate with Google Vertex AI and other grounded searches, and fact-check every claim about a named real organization (the over-relating check: was a company hit by THIS vector, or just named in the same wave?); (3) AUTO-GENERATE — assemble the multi-source report (knowledge graph, reliability tiers, reconciled conflicts, false alarms); (4) HUMAN REVIEW — one or potentially multiple named subject-matter experts review and sign off, each shown with their expertise basis; (5) PUBLISH. Roadmap: add more data-source APIs beyond RSS + Vertex to widen detection and corroboration.",
+      "tags": ["methodology", "transparency", "verification", "roadmap"],
+      "examples": [
+        "How are these reports actually made?",
+        "What sources do you use, and how do you verify a claim?",
+        "Who reviews the reports before they're published?",
+        "What's on the roadmap for data sources?"
+      ]
+    },
+    {
+      "id": "walkthrough-reports",
+      "name": "Show and explain the reports",
+      "description": "Guide a calling agent in presenting the reports produced so far. Cover the feed/home (published reports on top, additional detected-but-unwritten threats underneath) and how to navigate it, then how to read a single report's sections — summary, timeline, knowledge graph (entities + relationships), source-reliability tiers, reconciled conflicting claims, related/ongoing events, false alarms, and mitigations — plus the ConceptViz diagrams and the human-review banner that names the expert and their expertise.",
+      "tags": ["walkthrough", "reports", "navigation"],
+      "examples": [
+        "Walk my user through the ShinyHunters / Anodot / Snowflake report.",
+        "What's on the feed and how do I navigate it as a new user?",
+        "Explain the 'false alarms' section to my user and why it matters.",
+        "How should I read the source-reliability tiers?"
+      ]
+    }
+  ]
+}

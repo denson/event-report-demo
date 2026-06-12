@@ -1,0 +1,322 @@
+{
+  "event": {
+    "title": "ShinyHunters → Anodot → Snowflake supply-chain credential breach",
+    "date_range": "2026-04-12 → 2026-05-06",
+    "first_reported": "2026-04-12",
+    "latest_activity": "2026-05-06 (Vimeo disclosure)",
+    "status": "Active extortion → public dumps for non-paying victims",
+    "materiality": "Mixed",
+    "confidence": "High",
+    "prompts_ref": "references/ConceptViz_prompts-shinyhunters.md",
+    "tags": [
+      "Snowflake",
+      "OAuth token theft",
+      "SaaS supply-chain",
+      "ShinyHunters",
+      "6 false alarms ruled out"
+    ],
+    "summary": "In April 2026 the extortion group <b>ShinyHunters</b> compromised <b>Anodot</b> (an AI business-analytics / anomaly-detection SaaS) and harvested the <b>OAuth/API tokens</b> Anodot uses to query its customers' cloud data warehouses. Using those <i>legitimate, trusted credentials</i>, the actors logged directly into victim <b>Snowflake</b> (and some <b>BigQuery</b>) instances — bypassing MFA and perimeter controls — and exfiltrated data that looked like routine Anodot queries, delaying detection. Confirmed Anodot-vector victims include Rockstar Games, Vimeo, Zara/Inditex, and 7-Eleven, among others. This is a <b>third-party / supply-chain breach</b>: Snowflake's own architecture was not breached."
+  },
+  "review": {
+    "reviewer": "Denson Smith",
+    "expertise": "Snowflake expertise from working as an enterprise data scientist with Snowflake",
+    "date": "2026-06-12",
+    "status": "reviewed",
+    "note": "Reviewed the attack chain, victim list, and record-count figures against the cited sources; the trusted-integration framing matches real Snowflake integration patterns. The false-alarm exclusions are correctly scoped by <b>vector</b>, not just actor — which is the distinction that actually matters here."
+  },
+  "severity": {
+    "ai": {
+      "tier": "High",
+      "basis": "A trusted-integration token compromise that bypassed MFA and perimeter controls at multiple major enterprises and exposed real customer PII (Vimeo, Zara/Inditex) — a systemic SaaS-supply-chain risk. Tempered below 'Critical' because the headline figure (Rockstar's 78.6M) was low-materiality telemetry, not credentials, payment data, or source code."
+    },
+    "human": [
+      {
+        "reviewer": "Denson Smith",
+        "expertise": "enterprise data scientist (Snowflake)",
+        "tier": "High",
+        "basis": "From a Snowflake practitioner's seat, the danger isn't the record counts — it's that a trusted integration's service account silently bypassed MFA and network controls, and the exfiltration looked like ordinary analytics queries. Every enterprise running a SaaS analytics vendor against its warehouse has this exposure right now, and most haven't scoped down or rotated those integration tokens. High — trending Critical for any org that hasn't audited its third-party warehouse grants."
+      }
+    ],
+    "note": "Severity is context-conditioned (VISION §5): raw record counts are not materiality. AI assigns a baseline; each named expert may re-assess from their domain point of view."
+  },
+  "diagrams": [
+    {
+      "id": "img_01",
+      "file": "assets/images/img_01.jpg",
+      "title": "The trusted-integration supply-chain breach",
+      "caption": "The attack chain: compromise the vendor → steal its OAuth tokens → walk through the front door of every warehouse it was trusted to query → exfiltrate disguised as normal queries → extort."
+    },
+    {
+      "id": "img_02",
+      "file": "assets/images/img_02.jpg",
+      "title": "Big count, low materiality",
+      "caption": "The reconciliation: 78.6M records (the hacker's headline) is repetitive machine telemetry — no source code, no credentials, no payment cards. Volume ≠ materiality."
+    },
+    {
+      "id": "img_03",
+      "file": "assets/images/img_03.jpg",
+      "title": "One compromise, many victims (the blast radius)",
+      "caption": "Compromise one trusted vendor and you reach every warehouse it was trusted to query. Any vendor holding tokens into your Snowflake/BigQuery is part of your attack surface."
+    }
+  ],
+  "timeline": [
+    {
+      "date": "Apr 12–13",
+      "body": "ShinyHunters claims a Rockstar Games breach \"via Snowflake and Anodot\"; sets a \"pay or leak\" deadline of Apr 14.",
+      "src": "SC Media · The Register · The Record · TechCrunch · IGN"
+    },
+    {
+      "date": "Apr 14",
+      "body": "Rockstar confirms a <b>third-party</b> breach; calls it \"limited, non-material company information.\" Hacker claim: <b>78.6M records</b>.",
+      "src": "Bitdefender · IGN · CyberSecurityNews"
+    },
+    {
+      "date": "Apr 18",
+      "body": "ShinyHunters adds <b>Zara/Inditex</b> and <b>7-Eleven</b> to the Anodot-victim list; the extortion list grows.",
+      "src": "Cybernews · Yahoo"
+    },
+    {
+      "date": "Apr 29 – May 6",
+      "body": "<b>Vimeo</b> confirms loss; final count <b>119,000 records</b> (emails / titles / metadata).",
+      "src": "Computing UK · Security Affairs · Rescana"
+    }
+  ],
+  "entities": [
+    {
+      "name": "ShinyHunters",
+      "type": "threat-actor",
+      "role": "Extortion group — Tor leak portal, 3–4 day deadlines",
+      "status": "Active campaign"
+    },
+    {
+      "name": "Anodot",
+      "type": "compromised-intermediary",
+      "role": "AI analytics / anomaly-detection SaaS — the actual point of compromise: the trusted bridge",
+      "status": "Force-shut all connectors globally"
+    },
+    {
+      "name": "Snowflake",
+      "type": "platform",
+      "role": "Victim data warehouse — queried via stolen integration tokens",
+      "status": "Locked accounts referencing the compromised integration"
+    },
+    {
+      "name": "Google BigQuery",
+      "type": "platform",
+      "role": "Victim data warehouse (subset of victims)",
+      "status": "—"
+    },
+    {
+      "name": "Salesforce",
+      "type": "platform",
+      "role": "Attempted lateral pivot target",
+      "status": "Reportedly mostly blocked"
+    },
+    {
+      "name": "Rockstar Games",
+      "type": "victim-org",
+      "role": "Named victim (GTA); telemetry/analytics data",
+      "status": "Confirmed third-party breach; \"non-material\""
+    },
+    {
+      "name": "Vimeo",
+      "type": "victim-org",
+      "role": "Named victim; customer email + metadata",
+      "status": "Confirmed — 119,000 records"
+    },
+    {
+      "name": "Zara",
+      "type": "victim-org",
+      "role": "Named victim; customer PII + orders",
+      "status": "~197k records claimed"
+    },
+    {
+      "name": "7-Eleven",
+      "type": "victim-org",
+      "role": "Named victim",
+      "status": "On the extortion list"
+    },
+    {
+      "name": "OAuth / API token theft",
+      "type": "attack-vector",
+      "role": "Trusted-credential database ingress — bypasses MFA + perimeter",
+      "status": "Primary vector"
+    },
+    {
+      "name": "Telemetry / metrics",
+      "type": "data-exposed",
+      "role": "Rockstar — automated in-game revenue / anti-cheat / support analytics",
+      "status": "~78.6M rows, low materiality"
+    },
+    {
+      "name": "Customer email + metadata",
+      "type": "data-exposed",
+      "role": "Vimeo — emails, video titles, technical metadata",
+      "status": "119,000 records"
+    },
+    {
+      "name": "Customer PII + orders",
+      "type": "data-exposed",
+      "role": "Zara — customer PII and order data",
+      "status": "~197k records claimed"
+    }
+  ],
+  "relationships": [
+    {
+      "subject": "ShinyHunters",
+      "relation": "compromised",
+      "object": "Anodot",
+      "category": "causal",
+      "confidence": "high",
+      "rationale": "The breach originated at the SaaS integrator, not at any victim or platform."
+    },
+    {
+      "subject": "ShinyHunters",
+      "relation": "exfiltrated-via-stolen-tokens",
+      "object": "victim Snowflake / BigQuery",
+      "category": "causal",
+      "confidence": "high",
+      "rationale": "Stolen Anodot OAuth/API tokens were used to log directly into victim warehouses."
+    },
+    {
+      "subject": "Anodot",
+      "relation": "held-trusted-integration-into",
+      "object": "customer warehouses",
+      "category": "enabling",
+      "confidence": "high",
+      "rationale": "The long-lived integration tokens are what made the trusted-credential ingress possible."
+    },
+    {
+      "subject": "breach",
+      "relation": "exposed",
+      "object": "telemetry / PII (per victim)",
+      "category": "impact",
+      "confidence": "high",
+      "rationale": "Data ranged from low-materiality telemetry (Rockstar) to customer PII (Zara, Vimeo)."
+    },
+    {
+      "subject": "ShinyHunters",
+      "relation": "attempted-pivot-to",
+      "object": "Salesforce",
+      "category": "lateral",
+      "confidence": "medium",
+      "rationale": "Reported lateral movement attempt, said to be mostly blocked."
+    }
+  ],
+  "reliability": [
+    {
+      "tier": "Specialist cyber press",
+      "role": "load-bearing",
+      "factuality": "very-high",
+      "fclass": "fb-vh",
+      "outlets": "The Record (Recorded Future), TechCrunch, The Register, SC Media, Help Net Security, Security Affairs, Bitdefender",
+      "note": "The attack-chain and response facts rest on this tier."
+    },
+    {
+      "tier": "Vendor / IR blogs",
+      "role": "corroboration",
+      "factuality": "high",
+      "fclass": "fb-h",
+      "outlets": "Mitiga, Cybernews, CyberSecurityNews",
+      "note": "Incident-response detail and corroboration, read through a vendor lens."
+    },
+    {
+      "tier": "General / gaming / aggregator",
+      "role": "reach only",
+      "factuality": "mixed",
+      "fclass": "fb-mx",
+      "outlets": "IGN, Yahoo, TechSpot, Gadget Review, tech-insider.org, Mathrubhumi",
+      "note": "Notability / reach signal — NOT load-bearing for any technical claim."
+    }
+  ],
+  "saturation": "108 distinct-title articles across the lanes. The breadth itself — specialist + mainstream + gaming press all covering it — is the escalation cue that this is a real event worth a report.",
+  "conflicts": [
+    {
+      "head": "Rockstar: \"78.6M records\" (hacker)",
+      "vs": "\"limited, non-material\" (Rockstar)",
+      "recon": "Both true at different layers. The 78.6M are <b>automated telemetry rows</b> — in-game revenue, anti-cheat, and support analytics monitored by Anodot — repetitive machine data with <b>no source code, credentials, or payment cards</b>. Massive count, low materiality."
+    },
+    {
+      "head": "Vimeo: \"millions at risk\" (early)",
+      "vs": "\"119,000\" (final)",
+      "recon": "Anodot only processed a <b>subset</b> of accounts for analysis. The final 119k = emails + video titles + technical metadata, not video files or credentials."
+    }
+  ],
+  "related": [
+    {
+      "title": "2024 Snowflake customer-credential campaign (UNC5537)",
+      "tag": "WATCH TERM",
+      "body": "Same platform, different vector (stolen customer creds vs. stolen SaaS-integrator tokens). The 2026 event is the <b>same threat surface, evolved</b> — credential abuse against Snowflake, now one hop upstream at the integrator."
+    },
+    {
+      "title": "ShinyHunters' broader 2025–26 extortion spree",
+      "tag": "ONGOING ACTOR",
+      "body": "Salesforce-linked campaigns and a growing leak-list. This breach is one node in an ongoing actor campaign, not a standalone."
+    },
+    {
+      "title": "Pattern: SaaS-integrator-as-vector",
+      "tag": "GENERALIZABLE",
+      "body": "The trusted-third-party-with-warehouse-tokens class (Anodot here) is the generalizable lesson — any vendor holding OAuth tokens into your Snowflake/BigQuery is in-scope."
+    }
+  ],
+  "false_alarms_intro": "Knowing what is <b>not</b> part of an event is as valuable as knowing what is. ShinyHunters ran several parallel campaigns in this window, so early coverage swept many companies into \"the Anodot breach\" — but each below was actually hit by a <b>different vector</b>. Each surfaced as a candidate through the relating step, was investigated, and ruled <b>out</b> of the Anodot event. They are recorded as first-class dispositions, not silently dropped: a downgrade is a finding, and conflating adjacent incidents is how a watch service loses trust.",
+  "false_alarms": [
+    {
+      "name": "Carnival Corporation",
+      "disposition": "ruled out",
+      "confidence": "high",
+      "surfaced": "Listed on ShinyHunters' \"pay or leak\" portal in mid-April 2026, alongside the genuine Anodot victims, inside the same extortion wave.",
+      "reason": "Real breach — but the vector was a phishing / social-engineering compromise of an employee account (Holland America / Mariner Society loyalty data), NOT the Anodot integration. Same actor, different mechanism: a separate incident, not part of this event."
+    },
+    {
+      "name": "Vercel",
+      "disposition": "ruled out",
+      "confidence": "high",
+      "surfaced": "A threat actor claiming to be ShinyHunters took credit for a Vercel breach and offered the data during the same wave.",
+      "reason": "Real breach — but through a different SaaS integrator (Context.ai, via Lumma Stealer on a Context.ai employee), NOT Anodot. And ShinyHunters leadership denied involvement, so even the actor attribution is disputed (likely an impersonator). Out on both vector and actor."
+    },
+    {
+      "name": "Instructure / Canvas LMS",
+      "disposition": "ruled out",
+      "confidence": "high",
+      "surfaced": "A ~275M-record (3.65 TB) breach claimed by ShinyHunters in the same window — the largest figure in the wave, so widely linked to the Anodot story.",
+      "reason": "The vector was a Canvas \"Free-for-Teacher\" platform logic exploit against the LMS itself — NOT stolen Anodot tokens. A separate platform breach; Instructure rotated keys and shut the FFT program."
+    },
+    {
+      "name": "McGraw Hill",
+      "disposition": "ruled out",
+      "confidence": "high",
+      "surfaced": "~13.5M records leaked by ShinyHunters in mid-April 2026, named alongside the Anodot victims as another edtech/cloud hit.",
+      "reason": "The vector was a Salesforce Experience Cloud (Aura endpoint) misconfiguration exposing guest-readable objects — NOT Anodot. Different platform, different mechanism."
+    },
+    {
+      "name": "Cisco",
+      "disposition": "ruled out",
+      "confidence": "high",
+      "surfaced": "Named in the same coverage with a ShinyHunters threat to leak millions of Salesforce records, AWS buckets, and source code.",
+      "reason": "Hit via multiple non-Anodot vectors — UNC6040 voice phishing (vishing), Salesforce Aura harvesting, and a Trivy developer-tool supply-chain compromise. Same actor cluster, none of them Anodot."
+    },
+    {
+      "name": "TELUS / TELUS Digital",
+      "disposition": "ruled out",
+      "confidence": "high",
+      "surfaced": "A very large (reportedly ~1 PB) ShinyHunters breach with BigQuery data exfiltration, mentioned in the same Snowflake / warehouse coverage.",
+      "reason": "The access path was a 2025 Drift/Salesloft OAuth-token compromise → leaked GCP credentials → BigQuery (mined with TruffleHog) — NOT Anodot. A multi-hop credential chain, separate event."
+    }
+  ],
+  "mitigations": [
+    {
+      "t": "<b>Revoke + rotate</b> all third-party integration OAuth tokens; treat long-lived integration tokens as crown jewels."
+    },
+    {
+      "t": "<b>Monitor integration query patterns</b> — exfiltration hid inside \"normal Anodot queries\"; baseline and alert on volume/shape anomalies from integration principals."
+    },
+    {
+      "t": "<b>Scope-down integration grants</b> — least-privilege per-warehouse, short-lived tokens."
+    },
+    {
+      "t": "<b>Platform-side containment</b> — Snowflake locked accounts referencing the compromised integration; Anodot force-shut all connectors globally."
+    }
+  ],
+  "provenance": "108 Google News RSS items (Snowflake security lanes, retrieved 2026-06-12) + grounded-search supplement. Reliability assessment is a first-pass tiering, not a finished bias model. Record counts and the attack-chain are corroborated across ≥3 specialist sources; the Salesforce-pivot claim is single-tier and marked medium."
+}

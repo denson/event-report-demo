@@ -1,0 +1,87 @@
+{
+  "service": "Cyber Event Reports",
+  "service_start": "2026-06-12",
+  "events": [
+    {
+      "slug": "shinyhunters-anodot-snowflake",
+      "href": "shinyhunters-anodot-snowflake.html",
+      "card": "shinyhunters-anodot-snowflake.json",
+      "title": "ShinyHunters → Anodot → Snowflake supply-chain credential breach",
+      "date_range": "2026-04-12 → 2026-05-06",
+      "status": "reviewed",
+      "reviewer": "Denson Smith",
+      "reviewer_expertise": "Snowflake expertise from working as an enterprise data scientist with Snowflake",
+      "severity_ai": "High",
+      "severity_expert": "High",
+      "materiality": "Mixed",
+      "confidence": "High",
+      "tags": [
+        "Snowflake",
+        "OAuth token theft",
+        "SaaS supply-chain",
+        "ShinyHunters",
+        "6 false alarms ruled out"
+      ],
+      "summary": "In April 2026 the extortion group ShinyHunters compromised Anodot (an AI business-analytics / anomaly-detection SaaS) and harvested the OAuth/API tokens Anodot uses to query its customers' cloud data warehouses. Using those legitimate, t…",
+      "sort_impact": 3,
+      "sort_recent": "2026-05-06 (Vimeo disclosure)"
+    },
+    {
+      "slug": "teampcp-shai-hulud",
+      "status": "detected",
+      "kind": "report in progress",
+      "title": "TeamPCP / Shai-Hulud software-supply-chain worm",
+      "vector": "npm / PyPI package poisoning via hijacked CI/CD pipelines (TanStack→OpenAI, Bitwarden CLI, Checkmarx, elementary-data); OIDC-token extraction + trojanized releases.",
+      "tags": [
+        "software supply-chain",
+        "npm",
+        "PyPI",
+        "worm"
+      ],
+      "sort_impact": 0,
+      "sort_recent": "2026-05"
+    },
+    {
+      "slug": "eviltokens-kali365",
+      "status": "detected",
+      "kind": "report in progress",
+      "title": "EvilTokens / Kali365 phishing-as-a-service",
+      "vector": "Device-code auth abuse harvesting persistent OAuth refresh tokens; 340+ Microsoft 365 orgs; tokens survive password resets and MFA.",
+      "tags": [
+        "phishing",
+        "OAuth",
+        "M365",
+        "PhaaS"
+      ],
+      "sort_impact": 0,
+      "sort_recent": "2026-06"
+    },
+    {
+      "slug": "azure-databricks-ssrf",
+      "status": "detected",
+      "kind": "detected",
+      "title": "Azure Databricks SSRF — CVE-2026-33107 (CVSS 10.0)",
+      "vector": "Unauthenticated remote SSRF → internal metadata access → privilege escalation into enterprise data lakes. A vulnerability, not yet a confirmed exploitation event.",
+      "tags": [
+        "CVE",
+        "Databricks",
+        "SSRF"
+      ],
+      "sort_impact": 0,
+      "sort_recent": "2026-04"
+    },
+    {
+      "slug": "shinyhunters-2026-spree",
+      "status": "detected",
+      "kind": "tracked",
+      "title": "ShinyHunters 2026 multi-vector extortion spree",
+      "vector": "The broader campaign behind the Anodot breach — Cisco, TELUS, Instructure, McGraw Hill, Carnival, Vercel — each a distinct vector; tracked as false alarms in the Anodot report.",
+      "tags": [
+        "ShinyHunters",
+        "campaign"
+      ],
+      "sort_impact": 0,
+      "sort_recent": "2026-05"
+    }
+  ]
+}

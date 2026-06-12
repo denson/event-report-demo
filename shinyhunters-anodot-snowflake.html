@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Event Report</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#171d26; --panel2:#1e2632; --line:#2a3340;
+    --ink:#e6edf3; --mut:#9fb0c0; --accent:#4ea1ff; --warn:#ffb454; --good:#54d18c; --bad:#ff7b72;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:980px;margin:0 auto;padding:30px 22px 80px}
+  a{color:#79c0ff}
+  /* header */
+  .badge{display:inline-block;background:#3a2a12;color:var(--warn);border:1px solid #5a4220;border-radius:20px;padding:3px 11px;font-size:11.5px;font-weight:700;letter-spacing:.4px}
+  header h1{margin:12px 0 6px;font-size:27px;line-height:1.22}
+  .meta{color:var(--mut);font-size:14px}
+  .factsheet{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:18px 0 4px}
+  .fact{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+  .fact .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+  .fact .v{font-size:14.5px;font-weight:600;margin-top:4px}
+  .v.mixed{color:var(--warn)} .v.active{color:var(--bad)} .v.high{color:var(--good)}
+  /* sections */
+  section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:16px 0}
+  section h2{margin:0 0 14px;font-size:18px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  section h2 .n{color:var(--mut);font-weight:500;font-size:13px}
+  .summary{font-size:15.5px;color:#d6e2ee}
+  .summary b{color:#fff}
+  /* figure / diagrams */
+  figure.viz{margin:18px 0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  figure.viz img{width:100%;display:block;background:#fff}
+  figure.viz figcaption{padding:9px 14px;color:var(--mut);font-size:12.5px;border-top:1px solid var(--line)}
+  figure.viz figcaption b{color:var(--ink);font-weight:600}
+  .vizmissing{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:220px;padding:28px;text-align:center;border:2px dashed var(--line);color:var(--mut);font-size:13px}
+  .vizmissing .vm-t{font-size:14px;color:var(--ink);font-weight:600}
+  .vizmissing code{background:#0d1117;border:1px solid var(--line);border-radius:5px;padding:2px 7px;color:#79c0ff;font-size:12px}
+  /* timeline */
+  .tl{position:relative;margin:4px 0 0;padding-left:6px}
+  .tlrow{display:grid;grid-template-columns:140px 1fr;gap:14px;padding:11px 0;border-top:1px solid var(--line)}
+  .tlrow:first-child{border-top:0}
+  .tldate{color:var(--accent);font-weight:600;font-size:13.5px}
+  .tlbody{color:#d6e2ee;font-size:14px}
+  .tlbody .src{color:var(--mut);font-size:12px}
+  /* entity chips */
+  .filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+  .filters button{background:var(--panel2);color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer}
+  .filters button.on{background:var(--accent);color:#04121f;border-color:var(--accent);font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13px;background:var(--panel2);flex:1 1 250px;max-width:380px}
+  .chip .chiphd{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+  .chip .ty{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+  .chip .chiphd b{font-size:13.5px}
+  .chip .role{color:#adbac7;font-size:12.5px;margin-top:4px}
+  .chip .status{color:var(--good);font-size:12px;margin-top:3px}
+  .t-threat-actor{border-left:3px solid #ff7b72}
+  .t-compromised-intermediary{border-left:3px solid #ffb454}
+  .t-platform{border-left:3px solid #d2a8ff}
+  .t-victim-org{border-left:3px solid #79c0ff}
+  .t-attack-vector{border-left:3px solid #f778ba}
+  .t-data-exposed{border-left:3px solid #54d1c8}
+  /* relationships */
+  .relcat{margin-bottom:16px}
+  .cathd{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:9px;color:#04121f}
+  .cathd .cn{opacity:.65}
+  .c-causal{background:#ff7b72}.c-enabling{background:#d2a8ff}.c-impact{background:#d29922}.c-lateral{background:#ffa657}
+  .rel{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin-bottom:9px}
+  .rel .triple{font-size:14px}.rel .triple b{color:var(--accent)}.rel .triple i{color:var(--warn);font-style:normal}.rel .triple .relv{color:#adbac7}
+  .rel .why{color:var(--mut);font-size:13px;margin-top:5px}
+  .conf{font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:1px 6px;border-radius:4px;margin-left:7px;border:1px solid var(--line);color:var(--mut)}
+  .cf-high{color:#3fb950;border-color:#3fb950}.cf-medium{color:#d29922;border-color:#d29922}.cf-low{color:#ff7b72;border-color:#ff7b72}
+  /* reliability table */
+  .reltable{display:grid;gap:8px}
+  .rtier{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:12px 14px}
+  .rtier .rt-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .rt-hd b{font-size:14px}
+  .fact-b{border-radius:5px;padding:2px 9px;font-size:11px;font-weight:600;white-space:nowrap}
+  .fb-vh{background:#10331f;color:#54d18c;border:1px solid #1f5a36}
+  .fb-h{background:#13301d;color:#7fdba0;border:1px solid #1f4a30}
+  .fb-mx{background:#3a2a12;color:#ffb454;border:1px solid #5a4220}
+  .rt-role{margin-left:auto;font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+  .rt-out{color:#adbac7;font-size:12.5px}
+  .rt-loadbearing{border-left:3px solid var(--good)}
+  .rt-corrob{border-left:3px solid var(--accent)}
+  .rt-reach{border-left:3px solid var(--mut)}
+  .saturation{margin-top:12px;background:#10261c;border:1px solid #1f4633;color:#cfe9d9;border-radius:8px;padding:10px 13px;font-size:13px}
+  /* conflicting claims */
+  .claim{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:13px 15px;margin-bottom:11px;border-left:3px solid var(--warn)}
+  .claim .ch{font-weight:600;font-size:14px;margin-bottom:6px}
+  .claim .ch .vs{color:var(--mut);font-weight:400}
+  .claim .recon{color:#d6e2ee;font-size:13.5px}
+  .claim .recon b{color:#fff}
+  /* related events */
+  .related{display:grid;gap:10px}
+  .relev{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:12px 14px;border-left:3px solid #d2a8ff}
+  .relev b{font-size:14px}
+  .relev .tag{display:inline-block;background:#1d1630;color:#d2a8ff;border:1px solid #3a2a5a;border-radius:5px;padding:1px 7px;font-size:10.5px;font-weight:600;margin-left:8px;vertical-align:middle}
+  .relev .rd{color:#cdd9e5;font-size:13px;margin-top:5px}
+  /* false alarms / downgrades */
+  .fa-intro{color:#cdd9e5;font-size:13.5px;margin-bottom:12px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--good);border-radius:8px;padding:10px 13px}
+  .falsealarm{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:10px;border-left:3px solid #8b949e}
+  .falsealarm .fah{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+  .falsealarm .fah b{font-size:14px}
+  .falsealarm .ruled{font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:#04121f;background:#8b949e;border-radius:5px;padding:2px 8px}
+  .falsealarm .farow{font-size:13px;margin-top:5px;color:#cdd9e5}
+  .falsealarm .farow .fak{color:var(--mut);text-transform:uppercase;letter-spacing:.4px;font-size:10.5px;font-weight:600;margin-right:6px}
+  /* mitigations */
+  .mits{display:grid;gap:9px}
+  .mit{display:flex;gap:11px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+  .mit .ic{color:var(--good);font-weight:700;flex:0 0 auto}
+  .mit .mt{font-size:14px}.mit .mt b{color:#fff}
+  footer{color:var(--mut);font-size:12px;margin-top:26px;line-height:1.6;border-top:1px solid var(--line);padding-top:16px}
+  .backlink{display:inline-block;color:var(--mut);font-size:13px;text-decoration:none;margin-bottom:14px;border:1px solid var(--line);border-radius:7px;padding:4px 11px;background:var(--panel)}
+  .backlink:hover{border-color:var(--accent);color:var(--accent)}
+  .disclaimer{color:var(--mut);font-size:12.5px;font-style:italic;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:16px 0}
+  /* human review attribution */
+  .review-banner{display:flex;gap:12px;align-items:flex-start;border-radius:10px;padding:13px 16px;margin:0 0 4px;font-size:13.5px}
+  .review-banner.reviewed{background:#10261c;border:1px solid #1f4633;color:#cfe9d9}
+  .review-banner.draft{background:#3a2a12;border:1px solid #5a4220;color:#ffd9a8}
+  .review-banner .rb-ic{font-size:19px;line-height:1.15;flex:0 0 auto}
+  .review-banner .rb-hd{font-weight:700;letter-spacing:.5px;font-size:12px;text-transform:uppercase}
+  .review-banner.reviewed .rb-hd{color:var(--good)}
+  .review-banner.draft .rb-hd{color:var(--warn)}
+  .review-banner .rb-exp{margin-top:4px;color:#adbac7}
+  .review-banner .rb-exp b{color:#cfe9d9}
+  .review-banner .rb-note{margin-top:6px;color:#cdd9e5;border-left:2px solid #1f4633;padding-left:10px}
+  /* severity — AI-assessed + expert POV */
+  .sevpanel .sevrow{display:grid;grid-template-columns:auto auto 1fr;gap:12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+  .sevpanel .sevrow:first-of-type{border-top:0}
+  .sevwho{font-weight:600;font-size:13.5px;white-space:nowrap}
+  .sevwho .sevexp{display:block;color:var(--mut);font-size:11.5px;font-weight:400;margin-top:2px;max-width:170px;white-space:normal}
+  .sevtier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-radius:5px;padding:3px 10px;height:fit-content;white-space:nowrap;text-align:center}
+  .sev-low{background:#10331f;color:#54d18c;border:1px solid #1f5a36}
+  .sev-medium{background:#3a2a12;color:#ffb454;border:1px solid #5a4220}
+  .sev-high{background:#332316;color:#ffa657;border:1px solid #5e4220}
+  .sev-critical{background:#3a1518;color:#ff7b72;border:1px solid #5a2024}
+  .sevbasis{color:#cdd9e5;font-size:13px}
+  .sevnote{color:var(--mut);font-size:12px;margin-top:10px;font-style:italic}
+  @media(max-width:600px){.tlrow{grid-template-columns:1fr;gap:3px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">Loading report…</div>
+
+<script>
+const esc=s=>(s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+/* ============================================================
+   REPORT DATA — the structured event object, produced from the
+   markdown event file. Swap this object to render a new report.
+   ============================================================ */
+const DATA = {
+  event: {
+    title: "ShinyHunters → Anodot → Snowflake supply-chain credential breach",
+    date_range: "2026-04-12 → 2026-05-06",
+    first_reported: "2026-04-12",
+    latest_activity: "2026-05-06 (Vimeo disclosure)",
+    status: "Active extortion → public dumps for non-paying victims",
+    materiality: "Mixed",
+    confidence: "High",
+    prompts_ref: "references/ConceptViz_prompts-shinyhunters.md",
+    tags: ["Snowflake", "OAuth token theft", "SaaS supply-chain", "ShinyHunters", "6 false alarms ruled out"],
+    summary: "In April 2026 the extortion group <b>ShinyHunters</b> compromised <b>Anodot</b> (an AI business-analytics / anomaly-detection SaaS) and harvested the <b>OAuth/API tokens</b> Anodot uses to query its customers' cloud data warehouses. Using those <i>legitimate, trusted credentials</i>, the actors logged directly into victim <b>Snowflake</b> (and some <b>BigQuery</b>) instances — bypassing MFA and perimeter controls — and exfiltrated data that looked like routine Anodot queries, delaying detection. Confirmed Anodot-vector victims include Rockstar Games, Vimeo, Zara/Inditex, and 7-Eleven, among others. This is a <b>third-party / supply-chain breach</b>: Snowflake's own architecture was not breached."
+  },
+
+  review: {
+    reviewer: "Denson Smith",
+    expertise: "Snowflake expertise from working as an enterprise data scientist with Snowflake",
+    date: "2026-06-12",
+    status: "reviewed",
+    note: "Reviewed the attack chain, victim list, and record-count figures against the cited sources; the trusted-integration framing matches real Snowflake integration patterns. The false-alarm exclusions are correctly scoped by <b>vector</b>, not just actor — which is the distinction that actually matters here."
+  },
+
+  severity: {
+    ai: { tier: "High", basis: "A trusted-integration token compromise that bypassed MFA and perimeter controls at multiple major enterprises and exposed real customer PII (Vimeo, Zara/Inditex) — a systemic SaaS-supply-chain risk. Tempered below 'Critical' because the headline figure (Rockstar's 78.6M) was low-materiality telemetry, not credentials, payment data, or source code." },
+    human: [
+      { reviewer: "Denson Smith", expertise: "enterprise data scientist (Snowflake)", tier: "High",
+        basis: "From a Snowflake practitioner's seat, the danger isn't the record counts — it's that a trusted integration's service account silently bypassed MFA and network controls, and the exfiltration looked like ordinary analytics queries. Every enterprise running a SaaS analytics vendor against its warehouse has this exposure right now, and most haven't scoped down or rotated those integration tokens. High — trending Critical for any org that hasn't audited its third-party warehouse grants." }
+    ],
+    note: "Severity is context-conditioned (VISION §5): raw record counts are not materiality. AI assigns a baseline; each named expert may re-assess from their domain point of view."
+  },
+
+  diagrams: [
+    { id:"img_01", file:"assets/images/img_01.jpg",
+      title:"The trusted-integration supply-chain breach",
+      caption:"The attack chain: compromise the vendor → steal its OAuth tokens → walk through the front door of every warehouse it was trusted to query → exfiltrate disguised as normal queries → extort." },
+    { id:"img_02", file:"assets/images/img_02.jpg",
+      title:"Big count, low materiality",
+      caption:"The reconciliation: 78.6M records (the hacker's headline) is repetitive machine telemetry — no source code, no credentials, no payment cards. Volume ≠ materiality." },
+    { id:"img_03", file:"assets/images/img_03.jpg",
+      title:"One compromise, many victims (the blast radius)",
+      caption:"Compromise one trusted vendor and you reach every warehouse it was trusted to query. Any vendor holding tokens into your Snowflake/BigQuery is part of your attack surface." }
+  ],
+
+  timeline: [
+    { date:"Apr 12–13", body:"ShinyHunters claims a Rockstar Games breach \"via Snowflake and Anodot\"; sets a \"pay or leak\" deadline of Apr 14.", src:"SC Media · The Register · The Record · TechCrunch · IGN" },
+    { date:"Apr 14", body:"Rockstar confirms a <b>third-party</b> breach; calls it \"limited, non-material company information.\" Hacker claim: <b>78.6M records</b>.", src:"Bitdefender · IGN · CyberSecurityNews" },
+    { date:"Apr 18", body:"ShinyHunters adds <b>Zara/Inditex</b> and <b>7-Eleven</b> to the Anodot-victim list; the extortion list grows.", src:"Cybernews · Yahoo" },
+    { date:"Apr 29 – May 6", body:"<b>Vimeo</b> confirms loss; final count <b>119,000 records</b> (emails / titles / metadata).", src:"Computing UK · Security Affairs · Rescana" }
+  ],
+
+  entities: [
+    { name:"ShinyHunters", type:"threat-actor", role:"Extortion group — Tor leak portal, 3–4 day deadlines", status:"Active campaign" },
+    { name:"Anodot", type:"compromised-intermediary", role:"AI analytics / anomaly-detection SaaS — the actual point of compromise: the trusted bridge", status:"Force-shut all connectors globally" },
+    { name:"Snowflake", type:"platform", role:"Victim data warehouse — queried via stolen integration tokens", status:"Locked accounts referencing the compromised integration" },
+    { name:"Google BigQuery", type:"platform", role:"Victim data warehouse (subset of victims)", status:"—" },
+    { name:"Salesforce", type:"platform", role:"Attempted lateral pivot target", status:"Reportedly mostly blocked" },
+    { name:"Rockstar Games", type:"victim-org", role:"Named victim (GTA); telemetry/analytics data", status:"Confirmed third-party breach; \"non-material\"" },
+    { name:"Vimeo", type:"victim-org", role:"Named victim; customer email + metadata", status:"Confirmed — 119,000 records" },
+    { name:"Zara", type:"victim-org", role:"Named victim; customer PII + orders", status:"~197k records claimed" },
+    { name:"7-Eleven", type:"victim-org", role:"Named victim", status:"On the extortion list" },
+    { name:"OAuth / API token theft", type:"attack-vector", role:"Trusted-credential database ingress — bypasses MFA + perimeter", status:"Primary vector" },
+    { name:"Telemetry / metrics", type:"data-exposed", role:"Rockstar — automated in-game revenue / anti-cheat / support analytics", status:"~78.6M rows, low materiality" },
+    { name:"Customer email + metadata", type:"data-exposed", role:"Vimeo — emails, video titles, technical metadata", status:"119,000 records" },
+    { name:"Customer PII + orders", type:"data-exposed", role:"Zara — customer PII and order data", status:"~197k records claimed" }
+  ],
+
+  relationships: [
+    { subject:"ShinyHunters", relation:"compromised", object:"Anodot", category:"causal", confidence:"high", rationale:"The breach originated at the SaaS integrator, not at any victim or platform." },
+    { subject:"ShinyHunters", relation:"exfiltrated-via-stolen-tokens", object:"victim Snowflake / BigQuery", category:"causal", confidence:"high", rationale:"Stolen Anodot OAuth/API tokens were used to log directly into victim warehouses." },
+    { subject:"Anodot", relation:"held-trusted-integration-into", object:"customer warehouses", category:"enabling", confidence:"high", rationale:"The long-lived integration tokens are what made the trusted-credential ingress possible." },
+    { subject:"breach", relation:"exposed", object:"telemetry / PII (per victim)", category:"impact", confidence:"high", rationale:"Data ranged from low-materiality telemetry (Rockstar) to customer PII (Zara, Vimeo)." },
+    { subject:"ShinyHunters", relation:"attempted-pivot-to", object:"Salesforce", category:"lateral", confidence:"medium", rationale:"Reported lateral movement attempt, said to be mostly blocked." }
+  ],
+
+  reliability: [
+    { tier:"Specialist cyber press", role:"load-bearing", factuality:"very-high", fclass:"fb-vh",
+      outlets:"The Record (Recorded Future), TechCrunch, The Register, SC Media, Help Net Security, Security Affairs, Bitdefender",
+      note:"The attack-chain and response facts rest on this tier." },
+    { tier:"Vendor / IR blogs", role:"corroboration", factuality:"high", fclass:"fb-h",
+      outlets:"Mitiga, Cybernews, CyberSecurityNews",
+      note:"Incident-response detail and corroboration, read through a vendor lens." },
+    { tier:"General / gaming / aggregator", role:"reach only", factuality:"mixed", fclass:"fb-mx",
+      outlets:"IGN, Yahoo, TechSpot, Gadget Review, tech-insider.org, Mathrubhumi",
+      note:"Notability / reach signal — NOT load-bearing for any technical claim." }
+  ],
+  saturation: "108 distinct-title articles across the lanes. The breadth itself — specialist + mainstream + gaming press all covering it — is the escalation cue that this is a real event worth a report.",
+
+  conflicts: [
+    { head:"Rockstar: \"78.6M records\" (hacker)", vs:"\"limited, non-material\" (Rockstar)",
+      recon:"Both true at different layers. The 78.6M are <b>automated telemetry rows</b> — in-game revenue, anti-cheat, and support analytics monitored by Anodot — repetitive machine data with <b>no source code, credentials, or payment cards</b>. Massive count, low materiality." },
+    { head:"Vimeo: \"millions at risk\" (early)", vs:"\"119,000\" (final)",
+      recon:"Anodot only processed a <b>subset</b> of accounts for analysis. The final 119k = emails + video titles + technical metadata, not video files or credentials." }
+  ],
+
+  related: [
+    { title:"2024 Snowflake customer-credential campaign (UNC5537)", tag:"WATCH TERM",
+      body:"Same platform, different vector (stolen customer creds vs. stolen SaaS-integrator tokens). The 2026 event is the <b>same threat surface, evolved</b> — credential abuse against Snowflake, now one hop upstream at the integrator." },
+    { title:"ShinyHunters' broader 2025–26 extortion spree", tag:"ONGOING ACTOR",
+      body:"Salesforce-linked campaigns and a growing leak-list. This breach is one node in an ongoing actor campaign, not a standalone." },
+    { title:"Pattern: SaaS-integrator-as-vector", tag:"GENERALIZABLE",
+      body:"The trusted-third-party-with-warehouse-tokens class (Anodot here) is the generalizable lesson — any vendor holding OAuth tokens into your Snowflake/BigQuery is in-scope." }
+  ],
+
+  false_alarms_intro: "Knowing what is <b>not</b> part of an event is as valuable as knowing what is. ShinyHunters ran several parallel campaigns in this window, so early coverage swept many companies into \"the Anodot breach\" — but each below was actually hit by a <b>different vector</b>. Each surfaced as a candidate through the relating step, was investigated, and ruled <b>out</b> of the Anodot event. They are recorded as first-class dispositions, not silently dropped: a downgrade is a finding, and conflating adjacent incidents is how a watch service loses trust.",
+  false_alarms: [
+    { name:"Carnival Corporation", disposition:"ruled out", confidence:"high",
+      surfaced:"Listed on ShinyHunters' \"pay or leak\" portal in mid-April 2026, alongside the genuine Anodot victims, inside the same extortion wave.",
+      reason:"Real breach — but the vector was a phishing / social-engineering compromise of an employee account (Holland America / Mariner Society loyalty data), NOT the Anodot integration. Same actor, different mechanism: a separate incident, not part of this event." },
+    { name:"Vercel", disposition:"ruled out", confidence:"high",
+      surfaced:"A threat actor claiming to be ShinyHunters took credit for a Vercel breach and offered the data during the same wave.",
+      reason:"Real breach — but through a different SaaS integrator (Context.ai, via Lumma Stealer on a Context.ai employee), NOT Anodot. And ShinyHunters leadership denied involvement, so even the actor attribution is disputed (likely an impersonator). Out on both vector and actor." },
+    { name:"Instructure / Canvas LMS", disposition:"ruled out", confidence:"high",
+      surfaced:"A ~275M-record (3.65 TB) breach claimed by ShinyHunters in the same window — the largest figure in the wave, so widely linked to the Anodot story.",
+      reason:"The vector was a Canvas \"Free-for-Teacher\" platform logic exploit against the LMS itself — NOT stolen Anodot tokens. A separate platform breach; Instructure rotated keys and shut the FFT program." },
+    { name:"McGraw Hill", disposition:"ruled out", confidence:"high",
+      surfaced:"~13.5M records leaked by ShinyHunters in mid-April 2026, named alongside the Anodot victims as another edtech/cloud hit.",
+      reason:"The vector was a Salesforce Experience Cloud (Aura endpoint) misconfiguration exposing guest-readable objects — NOT Anodot. Different platform, different mechanism." },
+    { name:"Cisco", disposition:"ruled out", confidence:"high",
+      surfaced:"Named in the same coverage with a ShinyHunters threat to leak millions of Salesforce records, AWS buckets, and source code.",
+      reason:"Hit via multiple non-Anodot vectors — UNC6040 voice phishing (vishing), Salesforce Aura harvesting, and a Trivy developer-tool supply-chain compromise. Same actor cluster, none of them Anodot." },
+    { name:"TELUS / TELUS Digital", disposition:"ruled out", confidence:"high",
+      surfaced:"A very large (reportedly ~1 PB) ShinyHunters breach with BigQuery data exfiltration, mentioned in the same Snowflake / warehouse coverage.",
+      reason:"The access path was a 2025 Drift/Salesloft OAuth-token compromise → leaked GCP credentials → BigQuery (mined with TruffleHog) — NOT Anodot. A multi-hop credential chain, separate event." }
+  ],
+
+  mitigations: [
+    { t:"<b>Revoke + rotate</b> all third-party integration OAuth tokens; treat long-lived integration tokens as crown jewels." },
+    { t:"<b>Monitor integration query patterns</b> — exfiltration hid inside \"normal Anodot queries\"; baseline and alert on volume/shape anomalies from integration principals." },
+    { t:"<b>Scope-down integration grants</b> — least-privilege per-warehouse, short-lived tokens." },
+    { t:"<b>Platform-side containment</b> — Snowflake locked accounts referencing the compromised integration; Anodot force-shut all connectors globally." }
+  ],
+
+  provenance: "108 Google News RSS items (Snowflake security lanes, retrieved 2026-06-12) + grounded-search supplement. Reliability assessment is a first-pass tiering, not a finished bias model. Record counts and the attack-chain are corroborated across ≥3 specialist sources; the Salesforce-pivot claim is single-tier and marked medium."
+};
+
+
+/* ====================  RENDER  ==================== */
+const TYPE_LABEL={"threat-actor":"threat actor","compromised-intermediary":"compromised intermediary","platform":"platform","victim-org":"victim org","attack-vector":"attack vector","data-exposed":"data exposed"};
+let activeType=null;
+
+function severityHtml(){
+  const s=DATA.severity; if(!s) return '';
+  const tcls=t=>'sev-'+String(t||'').toLowerCase();
+  const row=(who,exp,tier,basis)=>`<div class="sevrow"><span class="sevwho">${esc(who)}${exp?`<span class="sevexp">${esc(exp)}</span>`:''}</span><span class="sevtier ${tcls(tier)}">${esc(tier||'—')}</span><span class="sevbasis">${esc(basis||'')}</span></div>`;
+  let rows='';
+  if(s.ai) rows+=row('AI-assessed','automated', s.ai.tier, s.ai.basis);
+  (s.human||[]).forEach(h=> rows+=row('Expert review', `${h.reviewer||''}${h.expertise?' — '+h.expertise:''}`, h.tier, h.basis));
+  return `<section class="sevpanel"><h2>Severity <span class="n">· AI-assessed + expert point-of-view</span></h2>${rows}${s.note?`<div class="sevnote">${esc(s.note)}</div>`:''}</section>`;
+}
+function reviewBannerHtml(){
+  const r=DATA.review;
+  if(!r||r.status==='draft'||r.status==='pending'){
+    return `<div class="review-banner draft"><span class="rb-ic">⚠</span><div class="rb-body"><div class="rb-hd">Draft — pending human review</div><div class="rb-exp">Machine-assembled from multi-source harvest + automated fact-check. Not yet vetted by a human subject-matter expert.</div></div></div>`;
+  }
+  const who=[r.reviewer&&`<b>${esc(r.reviewer)}</b>`, r.date&&esc(r.date)].filter(Boolean).join(' · ');
+  return `<div class="review-banner reviewed"><span class="rb-ic">✓</span><div class="rb-body">
+      <div class="rb-hd">Human-reviewed${who?' · '+who:''}</div>
+      ${r.expertise?`<div class="rb-exp"><b>Reviewer expertise:</b> ${esc(r.expertise)}</div>`:''}
+      ${r.note?`<div class="rb-note">${r.note}</div>`:''}
+    </div></div>`;
+}
+function diagramHtml(d){
+  return `<figure class="viz">
+    <img src="${esc(d.file)}" alt="${esc(d.title)}"
+      onerror="this.outerHTML='<div class=&quot;vizmissing&quot;><div class=&quot;vm-t&quot;>${esc(d.title)}</div><div>ConceptViz diagram — drop the downloaded PNG at</div><code>${esc(d.file)}</code><div>(prompt: ${esc((DATA.event&&DATA.event.prompts_ref)||"references/ConceptViz_prompts.md")} · ${esc(d.id)})</div></div>'"/>
+    <figcaption><b>${esc(d.title)}.</b> ${esc(d.caption)}</figcaption>
+  </figure>`;
+}
+function timelineHtml(){
+  return `<div class="tl">`+DATA.timeline.map(r=>`<div class="tlrow"><div class="tldate">${esc(r.date)}</div><div class="tlbody">${r.body}<div class="src">${esc(r.src)}</div></div></div>`).join('')+`</div>`;
+}
+function entitiesHtml(){
+  const ents=DATA.entities;
+  const present=[...new Set(ents.map(e=>e.type))];
+  const shown=activeType?ents.filter(e=>e.type===activeType):ents;
+  const filters=`<div class="filters"><button class="${activeType?'':'on'}" data-t="">all (${ents.length})</button>`+
+    present.map(t=>`<button class="${activeType===t?'on':''}" data-t="${t}">${esc(TYPE_LABEL[t]||t)} (${ents.filter(e=>e.type===t).length})</button>`).join('')+`</div>`;
+  const chips=shown.map(e=>`<div class="chip t-${esc(e.type)}">
+      <div class="chiphd"><span class="ty">${esc(TYPE_LABEL[e.type]||e.type)}</span><b>${esc(e.name)}</b></div>
+      ${e.role?`<div class="role">${esc(e.role)}</div>`:''}
+      ${e.status&&e.status!=='—'?`<div class="status">⦿ ${esc(e.status)}</div>`:''}
+    </div>`).join('');
+  return filters+`<div class="chips">${chips}</div>`;
+}
+function relationshipsHtml(){
+  const CAT=['causal','enabling','impact','lateral'];
+  const rels=DATA.relationships;
+  const present=[...CAT.filter(c=>rels.some(r=>r.category===c)),...[...new Set(rels.map(r=>r.category))].filter(c=>!CAT.includes(c))];
+  return present.map(c=>{
+    const items=rels.filter(r=>r.category===c);
+    return `<div class="relcat"><div class="cathd c-${esc(c)}">${esc(c)} <span class="cn">${items.length}</span></div>`+
+      items.map(r=>`<div class="rel"><div class="triple"><b>${esc(r.subject)}</b> <span class="relv">${esc(r.relation)}</span> <i>${esc(r.object)}</i><span class="conf cf-${esc(r.confidence)}">${esc(r.confidence)}</span></div>${r.rationale?`<div class="why">${esc(r.rationale)}</div>`:''}</div>`).join('')+`</div>`;
+  }).join('');
+}
+function reliabilityHtml(){
+  const rcls={'load-bearing':'rt-loadbearing','corroboration':'rt-corrob','reach only':'rt-reach'};
+  return `<div class="reltable">`+DATA.reliability.map(t=>`<div class="rtier ${rcls[t.role]||''}">
+      <div class="rt-hd"><b>${esc(t.tier)}</b><span class="fact-b ${t.fclass}">${esc(t.factuality)}</span><span class="rt-role">${esc(t.role)}</span></div>
+      <div class="rt-out">${esc(t.outlets)}</div>
+      <div class="why" style="color:var(--mut);font-size:12.5px;margin-top:6px">${esc(t.note)}</div>
+    </div>`).join('')+`</div><div class="saturation">📡 <b>Source-saturation signal:</b> ${esc(DATA.saturation)}</div>`;
+}
+function conflictsHtml(){
+  return DATA.conflicts.map(c=>`<div class="claim"><div class="ch">${esc(c.head)} <span class="vs">vs</span> ${esc(c.vs)}</div><div class="recon">${c.recon}</div></div>`).join('');
+}
+function relatedHtml(){
+  return `<div class="related">`+DATA.related.map(r=>`<div class="relev"><b>${esc(r.title)}</b><span class="tag">${esc(r.tag)}</span><div class="rd">${r.body}</div></div>`).join('')+`</div>`;
+}
+function falseAlarmsHtml(){
+  const fa=DATA.false_alarms||[];
+  const intro=DATA.false_alarms_intro?`<div class="fa-intro">${DATA.false_alarms_intro}</div>`:'';
+  return intro+fa.map(f=>`<div class="falsealarm">
+      <div class="fah"><b>${esc(f.name)}</b><span class="ruled">${esc(f.disposition||"ruled out")}</span>${f.confidence?`<span class="conf cf-${esc(f.confidence)}">${esc(f.confidence)}</span>`:''}</div>
+      ${f.surfaced?`<div class="farow"><span class="fak">Why it surfaced</span>${esc(f.surfaced)}</div>`:''}
+      ${f.reason?`<div class="farow"><span class="fak">Why it's out</span>${esc(f.reason)}</div>`:''}
+    </div>`).join('');
+}
+function mitigationsHtml(){
+  return `<div class="mits">`+DATA.mitigations.map(m=>`<div class="mit"><span class="ic">✓</span><span class="mt">${m.t}</span></div>`).join('')+`</div>`;
+}
+
+function render(){
+  const ev=DATA.event;
+  document.title=ev.title?("Event Report — "+ev.title):"Event Report";
+  document.getElementById('app').innerHTML=`
+    <a href="${esc((DATA.event&&DATA.event.home_href)||'index.html')}" class="backlink">← All reports</a>
+    <header>
+      <div class="badge">${esc(ev.badge||"CYBER EVENT REPORT")}</div>
+      <h1>${esc(ev.title)}</h1>
+      <div class="meta">${esc(ev.date_range)}</div>
+      <div class="factsheet">
+        <div class="fact"><div class="k">First reported</div><div class="v">${esc(ev.first_reported)}</div></div>
+        <div class="fact"><div class="k">Latest activity</div><div class="v">${esc(ev.latest_activity)}</div></div>
+        <div class="fact"><div class="k">Status</div><div class="v active">${esc(ev.status)}</div></div>
+        <div class="fact"><div class="k">Materiality</div><div class="v mixed">${esc(ev.materiality)}</div></div>
+        <div class="fact"><div class="k">Confidence</div><div class="v high">${esc(ev.confidence)}</div></div>
+      </div>
+    </header>
+
+    ${reviewBannerHtml()}
+    ${severityHtml()}
+    ${ev.disclaimer?`<div class="disclaimer">${ev.disclaimer}</div>`:''}
+
+    <section><h2>Summary</h2>
+      <div class="summary">${ev.summary}</div>
+      ${diagramHtml(DATA.diagrams[0])}
+    </section>
+
+    <section><h2>Timeline <span class="n">· first report → latest disclosure</span></h2>${timelineHtml()}</section>
+
+    <section><h2>Knowledge graph — entities <span class="n">· ${DATA.entities.length} nodes · ${[...new Set(DATA.entities.map(e=>e.type))].length} types · click a type to filter</span></h2>
+      ${diagramHtml(DATA.diagrams[2])}
+      <div id="entbox">${entitiesHtml()}</div>
+    </section>
+
+    <section><h2>Knowledge graph — relationships <span class="n">· ${DATA.relationships.length} edges</span></h2>${relationshipsHtml()}</section>
+
+    <section><h2>Multi-source coverage + reliability <span class="n">· the relating layer — not dedup</span></h2>${reliabilityHtml()}</section>
+
+    <section><h2>Conflicting claims, reconciled</h2>
+      ${diagramHtml(DATA.diagrams[1])}
+      ${conflictsHtml()}
+    </section>
+
+    <section><h2>Related / ongoing events <span class="n">· relate-to-prior — the agent's job</span></h2>${relatedHtml()}</section>
+
+    ${(DATA.false_alarms&&DATA.false_alarms.length)?`<section><h2>False alarms — investigated &amp; ruled out <span class="n">· ${DATA.false_alarms.length} downgrades · knowing what's NOT in the event is first-class signal</span></h2>${falseAlarmsHtml()}</section>`:''}
+
+    <section><h2>Mitigations / defender takeaways</h2>${mitigationsHtml()}</section>
+
+    <footer><b>Provenance.</b> ${esc(DATA.provenance)}<br><br>
+      Multi-source fusion: Google News RSS grounded harvest + grounded-search supplement · diagrams by ConceptViz · provenance is domain-level (live URLs re-found on demand).</footer>`;
+}
+function bindFilters(){
+  document.querySelectorAll('#entbox .filters button').forEach(b=>b.onclick=()=>{
+    activeType=b.dataset.t||null;
+    document.getElementById('entbox').innerHTML=entitiesHtml();
+    bindFilters();
+  });
+}
+render();
+bindFilters();
+
+// ---- WebMCP: expose this event to an IN-BROWSER agent as typed tools (context-delivery, feature-detected) ----
+// No-ops on browsers without navigator.modelContext (W3C incubation; Chrome origin-trial). The page never
+// generates prose — it hands the calling agent the structured material so the agent can explain it.
+(function(){
+  if(typeof navigator==='undefined' || !navigator.modelContext || !navigator.modelContext.registerTool) return;
+  const ev=DATA.event||{}, sev=DATA.severity||{}, rev=DATA.review||{};
+  const plain=s=>String(s||'').replace(/<[^>]+>/g,'');
+  const reg=t=>{try{navigator.modelContext.registerTool(t);}catch(e){}};
+  reg({ name:'getEventReportCard',
+    description:'Return the full structured event-report card for the cyber event on this page (event, entities, relationships, source reliability, conflicting claims, related events, adjudicated false alarms, severity, human review). The same machine data the human report renders from.',
+    inputSchema:{type:'object',properties:{}},
+    async execute(){ return DATA; } });
+  reg({ name:'explainThisEvent',
+    description:'Return concise talking points to brief a human on this event: what happened, the vector, confirmed victims, severity (AI + expert), how many adjacent incidents were ruled out as false alarms, and who reviewed it. Use these to explain; do not invent beyond them.',
+    inputSchema:{type:'object',properties:{audience:{type:'string',description:'optional audience hint, e.g. "executive", "engineer"'}}},
+    async execute(){ return {
+      title:ev.title, date_range:ev.date_range, status:ev.status, summary:plain(ev.summary),
+      severity_ai:sev.ai&&sev.ai.tier, severity_expert:(sev.human&&sev.human[0]&&sev.human[0].tier)||null,
+      confirmed_victims:(DATA.entities||[]).filter(e=>e.type==='victim-org').map(e=>e.name),
+      false_alarms_ruled_out:(DATA.false_alarms||[]).map(f=>f.name),
+      reviewed_by: rev.status==='reviewed' ? rev.reviewer+' ('+rev.expertise+')' : 'pending human review',
+      how_to_read:'Sources are tiered by reliability (load-bearing vs reach-only); false alarms are companies named in the same wave but hit by a DIFFERENT vector — not part of this event.'
+    }; } });
+  reg({ name:'getFalseAlarms',
+    description:'Return the adjudicated false alarms for this event — companies that surfaced as candidates but were ruled out, with why they surfaced and their actual (different) vector. Knowing what is NOT part of the event is first-class signal.',
+    inputSchema:{type:'object',properties:{}},
+    async execute(){ return { intro:plain(DATA.false_alarms_intro), false_alarms:DATA.false_alarms||[] }; } });
+})();
+</script>
+</body>
+</html>
